@@ -4,6 +4,8 @@
 */
 function (out) {
 
-	out.push('<div', this.domAttrs_(), '></div>');
+	out.push('<div', this.domAttrs_(), '><div id=', this.uuid, '-cnt>');
+	out.push(this._value);
+	out.push('</div></div>');
 
 }

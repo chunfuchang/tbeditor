@@ -1,6 +1,9 @@
 <zk>
-	<window title="Hello World!!" border="normal" width="300px"
-		apply="test.ctrl.DemoWindowComposer">
-		<Tbeditor id="myComp" />
+	<window title="Hello World!!" border="normal" width="100%"
+		viewModel='@id("vm") @init("org.zkoss.test.TbDemoViewModel")'>
+		<tbeditor id="myComp" value="@bind(vm.value)" config="@load(vm.config)" 
+			onChange="@command('printValue', val=self.value)" />
+		<textbox id="tb" onOK="@command('changeValue', val=self.value)" 
+			value="@bind(vm.value)"></textbox>
 	</window>
 </zk>

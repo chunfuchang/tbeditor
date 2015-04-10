@@ -20,8 +20,15 @@
  *
  */
 tbeditor.Tbeditor = zk.$extends(zul.Widget, {
-	_text:'', //default value for text attribute
+	_value: '', //default value for text attribute
+	_cnt: '',
+	_config: {},
+	_beginChangeValue: 0,
 	
+	$init: function () {
+		this.$supers('$init', arguments);
+		
+	},
 	/**
 	 * Don't use array/object as a member field, it's a restriction for ZK object,
 	 * it will work like a static , share with all the same Widget class instance.
@@ -42,10 +49,13 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 		 * It's more clear.
 		 *
 		 */
-		text: function() { //this function will be called after setText() .
+		value: function() { //this function will be called after setText() .
 		
-			if(this.desktop) {
+			if (this.desktop) {
 				//updated UI here.
+				if (this._cnt) {
+					jq(this._cnt).html(this._value);
+				}
 			}
 		}
 	},
@@ -55,15 +65,15 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 	 *
 	 * Like the example below, they are the same as we mentioned in $define section.
 	 */
-	/*
-	getText:function(){ return this._text; },
-	setText:function(val){
-		this._text = val;
+	
+	getConfig: function() { return this._config; },
+	setConfig: function (val) {
+		this._config = val;
 		if(this.desktop){
 		//update the UI here.
 		}
 	},
-	*/
+	
 	bind_: function () {
 		/**
 		 * For widget lifecycle , the super bind_ should be called
@@ -71,6 +81,16 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 		 * DONT'T forget to call supers in bind_ , or you will get error.
 		 */
 		this.$supers(tbeditor.Tbeditor,'bind_', arguments);
+		
+		this._cnt = this.$n('cnt');
+		var wgt = this;
+		jq(this._cnt).trumbowyg(this._config)
+					.on('tbwfocus', function(evt) { wgt.proxy(wgt.doFocus_)(jq.Event.zk(evt, wgt)); })
+					.on('tbwblur', function() { wgt._onBlur(wgt); })
+					.on('tbwchange', function() { wgt._onChange(wgt); })
+					.on('tbwresize', function() { wgt._onResize(wgt); })
+					.on('tbwpaste', function() { wgt._onPaste(wgt); })
+					.on('tbwclose', function() { wgt._onClose(wgt); });
 	
 		//A example for domListen_ , REMEMBER to do domUnlisten in unbind_.
 		//this.domListen_(this.$n("cave"), "onClick", "_doItemsClick");
@@ -94,16 +114,46 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 		*/
 		this.$supers(tbeditor.Tbeditor,'unbind_', arguments);
 	},
+	_onFocus: function(wgt) {
+		wgt.proxy(wgt.doFocus_)
+		console.log('focus');
+	},
+	_onBlur: function(wgt) {
+		//we take it as onChange
+		wgt._value = jq(wgt._cnt).html();
+		wgt.fire('onChange', {value: wgt._value});
+	},
+	_onChange: function(wgt) {
+		//actually, it's onChanging
+		//remove setInterval!!!!!!!!!
+		//user evt target to retrieve html()
+		
+		var formerText = wgt._value;
+		var laterText = jq(wgt._cnt).html();
+		if (formerText != laterText) {
+			wgt._value = laterText;
+			wgt.fire('onChanging', {value: wgt._value});
+		}
+	},
+	_onResize: function(wgt) {
+		console.log('reize');
+	},
+	_onPaste: function(wgt) {
+		console.log('paste');
+	},
+	_onClose: function(wgt) {
+		console.log('close');
+	},
 	/*
 		widget event, more detail 
 		please refer to http://books.zkoss.org/wiki/ZK%20Client-side%20Reference/Notifications
-	 */
+	 
 	doClick_: function (evt) {
 		this.$super('doClick_', evt, true);//the super doClick_ should be called
 		this.fire('onFoo', {foo: 'myData'});
-	},
+	},*/
 	
 	getZclass: function () {
-		return this._zclass != null ? this._zclass: "z-Tbeditor";
+		return this._zclass != null ? this._zclass: "z-tbeditor";
 	}
 });
