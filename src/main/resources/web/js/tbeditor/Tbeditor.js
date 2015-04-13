@@ -21,6 +21,7 @@
  */
 tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 	_value: '', //default value for text attribute
+	_height: '',
 	_cnt: '',
 	_config: {},
 	_beginChangeValue: 0,
@@ -54,10 +55,35 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 			if (this.desktop) {
 				//updated UI here.
 				if (this._cnt) {
-					jq(this._cnt).html(this._value);
+					jq(this._cnt).trumbowyg('html', this._value);
 				}
 			}
+		},
+		width: function (v) {
+			if (!v || !this.$n()) return;
+			this._setSize(v, 'width');
+		},
+		height: function (v) {
+			if (!v || !this.$n()) return;			
+			this._setSize(v, 'height');
 		}
+	},
+	_setSize: function (value, prop) {
+		value = this._getValue(value);
+		if (!value) return;
+		
+		if (prop == 'height') {
+			jq(this.$n('cnt')).css({minHeight: value});
+		} else {
+			jq(this.$n()).width(value);
+		}
+	},
+	_getValue: function (value) {
+		if (!value) return null;
+		if (value.endsWith('%'))
+			return zk.ie ? jq.px0(jq(this.$n()).width()) : value;
+			
+		return jq.px0(zk.parseInt(value));
 	},
 	/**
 	 * If you don't like the way in $define ,
@@ -86,11 +112,12 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 		var wgt = this;
 		jq(this._cnt).trumbowyg(this._config)
 					.on('tbwfocus', function(evt) { wgt.proxy(wgt.doFocus_)(jq.Event.zk(evt, wgt)); })
-					.on('tbwblur', function() { wgt._onBlur(wgt); })
-					.on('tbwchange', function() { wgt._onChange(wgt); })
-					.on('tbwresize', function() { wgt._onResize(wgt); })
+					.on('tbwblur', wgt.proxy(wgt._onBlur))
+					.on('tbwchange', wgt.proxy(wgt._onChange))
 					.on('tbwpaste', function() { wgt._onPaste(wgt); })
 					.on('tbwclose', function() { wgt._onClose(wgt); });
+		if (this._height)
+			jq(this.$n('cnt')).css({minHeight: this._height});
 	
 		//A example for domListen_ , REMEMBER to do domUnlisten in unbind_.
 		//this.domListen_(this.$n("cave"), "onClick", "_doItemsClick");
@@ -107,6 +134,7 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 	
 		// A example for domUnlisten_ , should be paired with bind_
 		// this.domUnlisten_(this.$n("cave"), "onClick", "_doItemsClick");
+		jq(this._cnt).trumbowyg('destroy');
 		
 		/*
 		* For widget lifecycle , the super unbind_ should be called
@@ -114,29 +142,19 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 		*/
 		this.$supers(tbeditor.Tbeditor,'unbind_', arguments);
 	},
-	_onFocus: function(wgt) {
-		wgt.proxy(wgt.doFocus_)
-		console.log('focus');
-	},
-	_onBlur: function(wgt) {
+	_onBlur: function(evt) {
 		//we take it as onChange
-		wgt._value = jq(wgt._cnt).html();
-		wgt.fire('onChange', {value: wgt._value});
+		this._value = jq(this._cnt).trumbowyg('html');//evt.target.innerHTML;
+		this.fire('onChange', {value: this._value});
 	},
-	_onChange: function(wgt) {
+	_onChange: function(evt) {
 		//actually, it's onChanging
-		//remove setInterval!!!!!!!!!
-		//user evt target to retrieve html()
-		
-		var formerText = wgt._value;
-		var laterText = jq(wgt._cnt).html();
+		var formerText = this._value;
+		var laterText = /*jq(this._cnt).trumbowyg('html');*/evt.target.innerHTML;
 		if (formerText != laterText) {
-			wgt._value = laterText;
-			wgt.fire('onChanging', {value: wgt._value});
+			this._value = laterText;
+			this.fire('onChanging', {value: this._value});
 		}
-	},
-	_onResize: function(wgt) {
-		console.log('reize');
 	},
 	_onPaste: function(wgt) {
 		console.log('paste');
