@@ -1,17 +1,14 @@
 <zk xmlns:w="client">
-	<window title="Hello World!!" border="normal" width="100%" height="400px"
+	<window title="Hello World!!" border="normal" width="100%" height="100%" 
 		viewModel='@id("vm") @init("org.zkoss.test.TbDemoViewModel")'>
-		<!-- <hlayout> -->
-			<tbeditor id="myComp" value="@bind(vm.value)" config="@load(vm.config)" width="1000px" vflex="1" height="300px" 
+			<tbeditor id="myComp" value="@bind(vm.value)" config="@load(vm.config)" vflex="1" width="100%" 
 				onChange="@command('printValue', val=self.value)" 
 				onChanging="@command('printValue', val=self.value)" 
 				w:onChange="console.log('from zul ' + zk.$('$myComp').getValue())"/>
 
-			<!-- <div hflex="1" vflex="1" style="background: green;"> -->
+			<!-- <div vflex="1" style="background: green;">
 				<textbox id="tb" onOK="@command('changeValue', val=self.value)"
 					value="@bind(vm.value)"></textbox>
-			<!-- </div> -->
-				
-		<!-- </hlayout> -->
+			</div> -->
 	</window>
 </zk>

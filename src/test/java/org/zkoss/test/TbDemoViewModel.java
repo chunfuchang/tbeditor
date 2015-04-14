@@ -32,7 +32,6 @@ public class TbDemoViewModel {
 	
 	@Command
 	public void printValue(@BindingParam("val") String val) {
-		//this.value = val;
 		System.out.println(val);
 	}
 

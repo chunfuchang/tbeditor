@@ -1,22 +1,17 @@
 tbeditor.Tbeditor = zk.$extends(zul.Widget, {
-	_value: '', //default value for text attribute
-	_height: '',
-	_cnt: '',
+	_value: '',
 	_jqCnt: '',
 	_config: {},
-	_beginChangeValue: 0,
 	
 	$init: function () {
 		this.$supers('$init', arguments);
 	},
 	
 	$define: {
-		value: function() { //this function will be called after setText() .
-		
+		value: function() {
 			if (this.desktop) {
-				//updated UI here.
-				if (this._cnt) {
-					jq(this._cnt).trumbowyg('html', this._value);
+				if (this._jqCnt) {
+					this._jqCnt.trumbowyg('html', this._value);
 				}
 			}
 		},
@@ -29,27 +24,6 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 			this._setSize(v, 'height');
 		}
 	},
-	_setSize: function (value, prop) {
-		value = this._getValue(value);
-		if (!value) return;
-		
-		if (prop == 'height') {
-			//set editor's height as parent div
-			var contentHeight = this._calcEditorHeight(value.endsWith('%') ? jq(this.$n()).outerHeight() : value);
-			jq(this.$n('cnt')).css({minHeight: contentHeight});
-			jq(this.$n('cnt')).parent().css({minHeight: contentHeight});
-		} else {
-			jq(this.$n()).width(value);
-		}
-	},
-	_getValue: function (value) {
-		if (!value) return null;
-		if (value.endsWith('%'))
-			return zk.ie ? jq.px0(jq(this.$n()).width()) : value;
-			
-		return jq.px0(zk.parseInt(value));
-	},
-	
 	getConfig: function() { return this._config; },
 	setConfig: function (val) {
 		this._config = val;
@@ -61,10 +35,9 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 	bind_: function () {
 		this.$supers(tbeditor.Tbeditor,'bind_', arguments);
 		
-		this._cnt = this.$n('cnt');
-		this._jqCnt = jq(this._cnt);
+		this._jqCnt = jq(this.$n('cnt'));
 		var wgt = this;
-		jq(this._cnt).trumbowyg(this._config)
+		this._jqCnt.trumbowyg(this._config)
 					.on('tbwfocus', function(evt) { wgt.proxy(wgt.doFocus_)(jq.Event.zk(evt, wgt)); })
 					.on('tbwblur', wgt.proxy(wgt._onBlur))
 					.on('tbwchange', wgt.proxy(wgt._onChange))
@@ -76,7 +49,7 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 		});
 	},
 	unbind_: function () {
-		jq(this._cnt).trumbowyg('destroy');
+		this._jqCnt.trumbowyg('destroy');
 		
 		zWatch.unlisten({
 			onSize : this
@@ -84,13 +57,35 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 
 		this.$supers(tbeditor.Tbeditor,'unbind_', arguments);
 	},
+	
+	_setSize: function (value, prop) {
+		value = this._getValue(value);
+		if (!value) return;
+		
+		if (prop == 'height') {
+			//set editor's height as parent div
+			var contentHeight = this._calcEditorHeight(value.endsWith('%') ? 
+					jq(this.$n()).outerHeight() : value);
+			this._jqCnt.css({minHeight: contentHeight});
+			this._jqCnt.parent().css({minHeight: contentHeight});
+		} else {
+			jq(this.$n()).width(value);
+		}
+	},
+	_getValue: function (value) {
+		if (!value) return null;
+		if (value.endsWith('%'))
+			return zk.ie ? jq.px0(jq(this.$n()).width()) : value;
+			
+		return jq.px0(zk.parseInt(value));
+	},
 	setFlexSize_: function(sz, ignoreMargins) {
 		this.$supers('setFlexSize_', arguments);
 		//hflex isn't handled here
 		if (sz.height) {
 			var contentHeight = this._calcEditorHeight(sz.height);
-			jq(this.$n('cnt')).css({minHeight: contentHeight});
-			jq(this.$n('cnt')).parent().css({minHeight: contentHeight});
+			this._jqCnt.css({minHeight: contentHeight});
+			this._jqCnt.parent().css({minHeight: contentHeight});
 		}
 	},
 	_calcEditorHeight: function(height) {
@@ -111,13 +106,13 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 	},
 	_onBlur: function(evt) {
 		//we take it as onChange
-		this._value = jq(this._cnt).trumbowyg('html');//same with evt.target.innerHTML;
+		this._value = this._jqCnt.trumbowyg('html');//same with evt.target.innerHTML;
 		this.fire('onChange', {value: this._value});
 	},
 	_onChange: function(evt) {
 		//actually, it's onChanging
 		var formerText = this._value;
-		var laterText = jq(this._cnt).trumbowyg('html');//same with evt.target.innerHTML;
+		var laterText = this._jqCnt.trumbowyg('html');//same with evt.target.innerHTML;
 		if (formerText != laterText) {
 			this._value = laterText;
 			this.fire('onChanging', {value: this._value});
