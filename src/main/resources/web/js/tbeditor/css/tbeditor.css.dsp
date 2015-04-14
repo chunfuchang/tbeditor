@@ -18,8 +18,8 @@
   position: relative;
   border: 1px solid #DDD;
   width: 96%;
-  /*min-height: 300px;*/
-  margin: 17px auto; }
+  min-height: 300px;
+  margin: 0px auto; }
 
 .trumbowyg-box .trumbowyg-editor {
   margin: 0 auto; }
@@ -33,7 +33,7 @@
      -moz-box-sizing: border-box;
           box-sizing: border-box;
   padding: 1% 2%;
-  /*min-height: 300px;*/
+  min-height: 300px;
   width: 100%;
   border-style: none;
   resize: none;

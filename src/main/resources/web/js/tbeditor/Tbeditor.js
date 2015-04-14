@@ -74,6 +74,7 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 		
 		if (prop == 'height') {
 			jq(this.$n('cnt')).css({minHeight: value});
+			jq(this.$n('cnt')).parent().css({minHeight: value});
 		} else {
 			jq(this.$n()).width(value);
 		}
@@ -85,12 +86,6 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 			
 		return jq.px0(zk.parseInt(value));
 	},
-	/**
-	 * If you don't like the way in $define ,
-	 * you could do the setter/getter by yourself here.
-	 *
-	 * Like the example below, they are the same as we mentioned in $define section.
-	 */
 	
 	getConfig: function() { return this._config; },
 	setConfig: function (val) {
@@ -101,11 +96,6 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 	},
 	
 	bind_: function () {
-		/**
-		 * For widget lifecycle , the super bind_ should be called
-		 * as FIRST STATEMENT in the function.
-		 * DONT'T forget to call supers in bind_ , or you will get error.
-		 */
 		this.$supers(tbeditor.Tbeditor,'bind_', arguments);
 		
 		this._cnt = this.$n('cnt');
@@ -116,31 +106,50 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 					.on('tbwchange', wgt.proxy(wgt._onChange))
 					.on('tbwpaste', function() { wgt._onPaste(wgt); })
 					.on('tbwclose', function() { wgt._onClose(wgt); });
-		if (this._height)
+		
+		/*if (this._height) {
 			jq(this.$n('cnt')).css({minHeight: this._height});
+			jq(this.$n('cnt')).parent().css({minHeight: this._height});
+		}*/
+		zWatch.listen({
+			onSize : this
+		});
+			
 	
 		//A example for domListen_ , REMEMBER to do domUnlisten in unbind_.
 		//this.domListen_(this.$n("cave"), "onClick", "_doItemsClick");
 	},
-	/*
-		A example for domListen_ listener.
-	*/
-	/*
-	_doItemsClick: function (evt) {
-		alert("item click event fired");
-	},
-	*/
 	unbind_: function () {
 	
 		// A example for domUnlisten_ , should be paired with bind_
 		// this.domUnlisten_(this.$n("cave"), "onClick", "_doItemsClick");
 		jq(this._cnt).trumbowyg('destroy');
 		
-		/*
-		* For widget lifecycle , the super unbind_ should be called
-		* as LAST STATEMENT in the function.
-		*/
+		zWatch.unlisten({
+			onSize : this
+		});
+
 		this.$supers(tbeditor.Tbeditor,'unbind_', arguments);
+	},
+	setFlexSize_: function(sz, ignoreMargins) {
+		this.$supers('setFlexSize_', arguments);
+		if (sz.height) {
+			var contentHeight = sz.height - zk.parseInt(jq(this.$n()).children().css('marginTop'))
+					- zk.parseInt(jq(this.$n()).children().css('marginBottom'))
+					- 2 * zk.parseInt(jq(this.$n()).children().css('border'))
+					- jq(this.$n()).find('ul').outerHeight();
+			jq(this.$n('cnt')).css({minHeight: contentHeight});
+			jq(this.$n('cnt')).parent().css({minHeight: contentHeight});
+		}
+	},
+	onSize: function() {
+		this.$supers('onSize', arguments);
+		if (!this.getVflex()) {
+			this._setSize(this.getHeight(), 'height');
+		}
+		if (!this.getHflex()) {
+			this._setSize(this.getWidth(), 'width');
+		}
 	},
 	_onBlur: function(evt) {
 		//we take it as onChange
@@ -150,7 +159,7 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 	_onChange: function(evt) {
 		//actually, it's onChanging
 		var formerText = this._value;
-		var laterText = /*jq(this._cnt).trumbowyg('html');*/evt.target.innerHTML;
+		var laterText = jq(this._cnt).trumbowyg('html');//evt.target.innerHTML;
 		if (formerText != laterText) {
 			this._value = laterText;
 			this.fire('onChanging', {value: this._value});
@@ -162,15 +171,6 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 	_onClose: function(wgt) {
 		console.log('close');
 	},
-	/*
-		widget event, more detail 
-		please refer to http://books.zkoss.org/wiki/ZK%20Client-side%20Reference/Notifications
-	 
-	doClick_: function (evt) {
-		this.$super('doClick_', evt, true);//the super doClick_ should be called
-		this.fire('onFoo', {foo: 'myData'});
-	},*/
-	
 	getZclass: function () {
 		return this._zclass != null ? this._zclass: "z-tbeditor";
 	}
