@@ -40,9 +40,7 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 		this._jqCnt.trumbowyg(this._config)
 					.on('tbwfocus', function(evt) { wgt.proxy(wgt.doFocus_)(jq.Event.zk(evt, wgt)); })
 					.on('tbwblur', wgt.proxy(wgt._onBlur))
-					.on('tbwchange', wgt.proxy(wgt._onChange))
-					.on('tbwpaste', function() { wgt._onPaste(wgt); })
-					.on('tbwclose', function() { wgt._onClose(wgt); });
+					.on('tbwchange', wgt.proxy(wgt._onChange));
 		
 		zWatch.listen({
 			onSize : this
@@ -117,12 +115,6 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 			this._value = laterText;
 			this.fire('onChanging', {value: this._value});
 		}
-	},
-	_onPaste: function(wgt) {
-		//do nothing
-	},
-	_onClose: function(wgt) {
-		//do nothing
 	},
 	getZclass: function () {
 		return this._zclass != null ? this._zclass: "z-tbeditor";
