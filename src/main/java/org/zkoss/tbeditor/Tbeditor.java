@@ -42,14 +42,16 @@ public class Tbeditor extends XulElement {
 	 * This is for setting editor's option.
 	 * <p>For more detail, please refer to <a href="http://alex-d.github.io/Trumbowyg/documentation.html">
 	 * official document</a>.</p> 
-	 * <p>if the option value is not string, please apply "new JavaScriptValue(value)" first.
-	 * And its functionality only work before widget bind, so we don't provide smart update</p>
+	 * <p>If the option value is not string, please apply "new JavaScriptValue(value)" first.</p>
+	 * <p>Because this functionality only works before widget bind, 
+	 * it will invalidate component rather than smart update.</p>
 	 * @see <a href="http://alex-d.github.io/Trumbowyg/documentation.html">official document</a>
 	 * @param config Map
 	 */
 	public void setConfig(Map<String, Object> config) {
-		if (config != null) {
+		if (!Objects.equals(_config, config)) {
 			_config = config;
+			invalidate();
 		}
 	}
 

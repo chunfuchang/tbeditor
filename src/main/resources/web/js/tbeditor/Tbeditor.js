@@ -1,6 +1,7 @@
 tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 	_value: '',
 	_jqCnt: '',
+	_editor: '',
 	_config: {},
 	
 	$init: function () {
@@ -9,10 +10,11 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 	
 	$define: {
 		value: function() {
-			if (this.desktop) {
-				if (this._jqCnt) {
-					this._jqCnt.trumbowyg('html', this._value);
-				}
+			if (this.desktop && this._editor) {
+				if (this._value)
+					this._editor.trumbowyg('html', this._value);
+				else
+					this._editor.trumbowyg('empty');
 			}
 		},
 		width: function (v) {
@@ -25,10 +27,16 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 		}
 	},
 	getConfig: function() { return this._config; },
+	/**
+	 * Config can only be set in server side
+	 * @param val Javascript object literal
+	 */
 	setConfig: function (val) {
-		this._config = val;
-		if(this.desktop){
-		//update the UI here.
+		if (this._config != val) {
+			this._config = val;
+			if (this.desktop && this._editor) {
+				//even rerender doesn't work, user can only set new config in server
+			}
 		}
 	},
 	
@@ -37,7 +45,7 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 		
 		this._jqCnt = jq(this.$n('cnt'));
 		var wgt = this;
-		this._jqCnt.trumbowyg(this._config)
+		this._editor = this._jqCnt.trumbowyg(this._config)
 					.on('tbwfocus', function(evt) { wgt.proxy(wgt.doFocus_)(jq.Event.zk(evt, wgt)); })
 					.on('tbwblur', wgt.proxy(wgt._onBlur))
 					.on('tbwchange', wgt.proxy(wgt._onChange));
@@ -47,7 +55,7 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 		});
 	},
 	unbind_: function () {
-		this._jqCnt.trumbowyg('destroy');
+		this._editor.trumbowyg('destroy');
 		
 		zWatch.unlisten({
 			onSize : this
@@ -104,13 +112,13 @@ tbeditor.Tbeditor = zk.$extends(zul.Widget, {
 	},
 	_onBlur: function(evt) {
 		//we take it as onChange
-		this._value = this._jqCnt.trumbowyg('html');//same with evt.target.innerHTML;
+		this._value = this._editor.trumbowyg('html');//same with evt.target.innerHTML;
 		this.fire('onChange', {value: this._value});
 	},
 	_onChange: function(evt) {
 		//actually, it's onChanging
 		var formerText = this._value;
-		var laterText = this._jqCnt.trumbowyg('html');//same with evt.target.innerHTML;
+		var laterText = this._editor.trumbowyg('html');//same with evt.target.innerHTML;
 		if (formerText != laterText) {
 			this._value = laterText;
 			this.fire('onChanging', {value: this._value});

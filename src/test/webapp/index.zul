@@ -1,14 +1,23 @@
 <zk xmlns:w="client">
+	<zscript><![CDATA[
+	    import java.util.*;
+	    import org.zkoss.json.JavaScriptValue;
+		Map config = new HashMap();
+		config.put("btns", new JavaScriptValue("['bold', 'italic', '|', 'link']"));
+		config.put("closable", true);
+		
+	]]></zscript>
 	<window title="Hello World!!" border="normal" width="100%" height="100%" 
 		viewModel='@id("vm") @init("org.zkoss.test.TbDemoViewModel")'>
-			<tbeditor id="myComp" value="@bind(vm.value)" config="@load(vm.config)" vflex="1" width="100%" 
+			<tbeditor id="myComp" value="@bind(vm.value)"  vflex="1" width="100%" 
 				onChange="@command('printValue', val=self.value)" 
 				onChanging="@command('printValue', val=self.value)" 
-				w:onChange="console.log('from zul ' + zk.$('$myComp').getValue())"/>
+				w:onChange="console.log('from zul: ' + zk.$('$myComp').getValue())"/>
 
-			<!-- <div vflex="1" style="background: green;">
+			<div vflex="1" style="background: green;">
 				<textbox id="tb" onOK="@command('changeValue', val=self.value)"
 					value="@bind(vm.value)"></textbox>
-			</div> -->
+				<button onClick="myComp.setConfig(config);">setConfig</button>
+			</div>
 	</window>
 </zk>
